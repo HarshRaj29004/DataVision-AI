@@ -8,6 +8,7 @@ import { DatasetViewer } from '@/components/dashboard/DatasetViewer';
 import { Workspace } from '@/components/dashboard/Workspace';
 import { parseCsv } from '@/lib/csv-parser';
 import { Navbar } from '@/components/dashboard/Navbar';
+import type { AnalyzeDatasetOutput } from '@/ai/flows/analyze-dataset';
 
 type ParsedData = {
   headers: string[];
@@ -19,7 +20,7 @@ export default function DashboardPage() {
   const [fileContent, setFileContent] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [parsedData, setParsedData] = useState<ParsedData>({ headers: [], data: [] });
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalyzeDatasetOutput | null>(null);
 
   const handleFileRead = (content: string, name: string) => {
     setFileContent(content);
