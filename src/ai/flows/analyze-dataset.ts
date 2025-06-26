@@ -94,12 +94,12 @@ const analyzeDatasetFlow = ai.defineFlow(
     outputSchema: AnalyzeDatasetOutputSchema,
     retry: {
       backoff: {
-        initial: 2000,
+        initial: 3000,
         multiplier: 2,
-        max: 30000,
+        max: 60000,
         randomizationFactor: 0.5,
       },
-      maxAttempts: 3,
+      maxAttempts: 5,
     },
   },
   async input => {
