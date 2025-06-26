@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import { Header } from '@/components/dashboard/Header';
-import { FileUpload } from '@/components/dashboard/FileUpload';
 import { DatasetAnalysis } from '@/components/dashboard/DatasetAnalysis';
 import { DatasetViewer } from '@/components/dashboard/DatasetViewer';
 import { Workspace } from '@/components/dashboard/Workspace';
 import { parseCsv } from '@/lib/csv-parser';
 import { Navbar } from '@/components/dashboard/Navbar';
 import type { AnalyzeDatasetOutput } from '@/ai/flows/analyze-dataset';
+import { useToast } from '@/hooks/use-toast';
 
 type ParsedData = {
   headers: string[];
@@ -21,6 +21,7 @@ export default function DashboardPage() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [parsedData, setParsedData] = useState<ParsedData>({ headers: [], data: [] });
   const [analysisResult, setAnalysisResult] = useState<AnalyzeDatasetOutput | null>(null);
+  const { toast } = useToast();
 
   const handleFileRead = (content: string, name: string) => {
     setFileContent(content);
@@ -34,21 +35,42 @@ export default function DashboardPage() {
       setParsedData({ headers: ['File Content'], data: [{ 'File Content': `Content of ${name} is loaded but tabular preview is only available for CSV files.`}] });
     }
   };
+  
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        handleFileRead(content, file.name);
+        toast({
+          title: "File Uploaded",
+          description: `${file.name} has been loaded successfully.`,
+        });
+      };
+      reader.onerror = () => {
+        toast({
+          variant: "destructive",
+          title: "Error Reading File",
+          description: "There was an issue reading the file.",
+        });
+      }
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+  };
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <Header />
-      <Navbar activeView={activeView} setActiveView={setActiveView} />
+      <Navbar activeView={activeView} setActiveView={setActiveView} onFileSelect={handleFileSelect} />
       <main className="flex-1 p-4 md:p-6 lg:p-8">
         {activeView === 'data' && (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 auto-rows-fr">
-            <div className="lg:col-span-1">
-              <FileUpload onFileContentRead={handleFileRead} />
-            </div>
+          <div className="grid h-full grid-cols-1 gap-6 auto-rows-fr lg:grid-cols-2">
             <div className="lg:col-span-1">
               <DatasetAnalysis fileContent={fileContent} analysisResult={analysisResult} setAnalysisResult={setAnalysisResult} />
             </div>
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-1">
                <DatasetViewer headers={parsedData.headers} data={parsedData.data} fileName={fileName} />
             </div>
           </div>
