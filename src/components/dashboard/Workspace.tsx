@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Database, Filter, LayoutGrid, Merge, GitCommitHorizontal } from "lucide-react";
@@ -22,8 +23,8 @@ export function Workspace() {
       <CardContent className="flex-grow flex flex-col items-center justify-center bg-muted/30 rounded-b-lg p-6 min-h-64">
         <div className="w-full flex items-center justify-center space-x-2 md:space-x-4 overflow-x-auto pb-4">
           {operations.map((op, index) => (
-            <>
-              <div key={op.name} className="flex flex-col items-center space-y-2 flex-shrink-0">
+            <React.Fragment key={op.name}>
+              <div className="flex flex-col items-center space-y-2 flex-shrink-0">
                 <div className={`flex items-center justify-center h-20 w-20 rounded-lg border-2 border-dashed shadow-sm ${op.color.replace('bg-', 'border-')}`}>
                   <op.icon className={`h-8 w-8 ${op.color.replace('bg-', 'text-')}`} />
                 </div>
@@ -32,7 +33,7 @@ export function Workspace() {
               {index < operations.length - 1 && (
                 <GitCommitHorizontal className="h-8 w-8 text-muted-foreground hidden md:block flex-shrink-0" />
               )}
-            </>
+            </React.Fragment>
           ))}
         </div>
         <p className="mt-8 text-sm text-muted-foreground text-center">
