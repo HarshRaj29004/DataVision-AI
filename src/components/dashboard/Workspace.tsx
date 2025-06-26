@@ -20,7 +20,7 @@ export function Workspace() {
         </CardTitle>
         <CardDescription>Drag and drop components to build your data science pipeline.</CardDescription>
       </CardHeader>
-      <CardContent className="flex-grow flex flex-col items-center justify-center bg-muted/30 rounded-b-lg p-6 min-h-64">
+      <CardContent className="flex-grow flex flex-col items-center justify-center bg-muted/30 rounded-b-lg p-6 min-h-96">
         <div className="w-full flex items-center justify-center space-x-2 md:space-x-4 overflow-x-auto pb-4">
           {operations.map((op, index) => (
             <React.Fragment key={op.name}>
