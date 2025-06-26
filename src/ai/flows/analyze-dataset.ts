@@ -92,6 +92,15 @@ const analyzeDatasetFlow = ai.defineFlow(
     name: 'analyzeDatasetFlow',
     inputSchema: AnalyzeDatasetInputSchema,
     outputSchema: AnalyzeDatasetOutputSchema,
+    retry: {
+      backoff: {
+        initial: 2000,
+        multiplier: 2,
+        max: 30000,
+        randomizationFactor: 0.5,
+      },
+      maxAttempts: 3,
+    },
   },
   async input => {
     const {output} = await analyzeDatasetPrompt(input);
