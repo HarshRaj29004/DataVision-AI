@@ -38,7 +38,7 @@ const CorrelationSchema = z.object({
     correlation: z.number().min(-1).max(1),
 });
 
-export const AnalyzeDatasetOutputSchema = z.object({
+const AnalyzeDatasetOutputSchema = z.object({
   summary: z.string().describe('A high-level summary of the dataset.'),
   columnAnalyses: z.array(ColumnAnalysisSchema).describe("A detailed analysis for each column in the dataset."),
   correlationMatrix: z.optional(z.array(CorrelationSchema)).describe("A list of correlation coefficients between all pairs of numeric columns. Only include if there are 2 or more numeric columns."),
