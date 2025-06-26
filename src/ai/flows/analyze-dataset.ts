@@ -25,10 +25,22 @@ const HistogramBinSchema = z.object({
   count: z.number().describe("The number of values in this bin."),
 });
 
+const StatisticsSchema = z.object({
+    mean: z.number().optional().describe("The average value (for numeric columns)."),
+    median: z.number().optional().describe("The median value (for numeric columns)."),
+    stdDev: z.number().optional().describe("The standard deviation (for numeric columns)."),
+    min: z.number().optional().describe("The minimum value (for numeric columns)."),
+    max: z.number().optional().describe("The maximum value (for numeric columns)."),
+    uniqueValues: z.number().optional().describe("The count of unique values (for categorical columns)."),
+    valueCounts: z.string().optional().describe("A summary of the top 5 most frequent values and their counts (for categorical columns)."),
+    description: z.string().optional().describe("A description of the content (for 'other' columns).")
+}).describe("An object containing descriptive statistics. Based on the column's dataType, populate ONLY the relevant fields (e.g., mean, median for numeric; uniqueValues for categorical).");
+
+
 const ColumnAnalysisSchema = z.object({
   columnName: z.string().describe("The name of the column."),
   dataType: z.enum(['numeric', 'categorical', 'other']).describe("The inferred data type of the column."),
-  statistics: z.record(z.union([z.string(), z.number()])).describe("An object containing descriptive statistics. For numeric columns, include mean, median, stdDev, min, max. For categorical, include uniqueValues and a summary of value counts."),
+  statistics: StatisticsSchema,
   histogramData: z.optional(z.array(HistogramBinSchema)).describe("Data for generating a histogram for numeric columns."),
 });
 
