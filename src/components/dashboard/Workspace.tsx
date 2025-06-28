@@ -148,11 +148,11 @@ const WorkspaceSidebar = () => {
 
 export function Workspace() {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
-        <div className="lg:col-span-4 xl:col-span-3">
+    <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 h-full">
+        <div className="lg:col-span-3">
             <WorkspaceSidebar />
         </div>
-        <div className="lg:col-span-8 xl:col-span-9">
+        <div className="lg:col-span-7">
             <PipelineVisual />
         </div>
     </div>
