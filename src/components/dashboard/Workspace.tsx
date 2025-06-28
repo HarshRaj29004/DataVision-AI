@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Database, Filter, LayoutGrid, Merge, GitCommitHorizontal, FileSpreadsheet, Bot, ListChecks } from "lucide-react";
+import { Database, Filter, LayoutGrid, Merge, GitCommitHorizontal, FileSpreadsheet, Bot, ListChecks, Puzzle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,7 +16,14 @@ type PipelineOperation = {
   color: string;
 };
 
-const PipelineVisual = ({ operations, onDrop, onDragOver }: { operations: PipelineOperation[], onDrop: (e: React.DragEvent<HTMLDivElement>) => void, onDragOver: (e: React.DragEvent<HTMLDivElement>) => void }) => {
+const availableOperations = [
+  { name: 'Filter', icon: Filter, color: "bg-green-100 text-green-800", description: "Filter rows based on conditions." },
+  { name: 'Merge', icon: Merge, color: "bg-purple-100 text-purple-800", description: "Join with another dataset." },
+  { name: 'Group By', icon: GitCommitHorizontal, color: "bg-yellow-100 text-yellow-800", description: "Aggregate data by columns." },
+  { name: 'AI Clean', icon: Bot, color: "bg-indigo-100 text-indigo-800", description: "Clean and format data with AI." },
+];
+
+const PipelineVisual = ({ operations, onDrop, onDragOver, onDragLeave }: { operations: PipelineOperation[], onDrop: (e: React.DragEvent<HTMLDivElement>) => void, onDragOver: (e: React.DragEvent<HTMLDivElement>) => void, onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void }) => {
   return (
     <Card className="h-full flex flex-col transition-all duration-300 hover:shadow-lg">
       <CardHeader>
@@ -24,18 +31,19 @@ const PipelineVisual = ({ operations, onDrop, onDragOver }: { operations: Pipeli
           <LayoutGrid className="h-6 w-6" />
           Data Pipeline
         </CardTitle>
-        <CardDescription>Visually represent your data transformation steps. Drag columns from the sidebar to start.</CardDescription>
+        <CardDescription>Visually represent your data transformation steps. Drag columns or elements from the sidebar to start.</CardDescription>
       </CardHeader>
       <CardContent 
         onDrop={onDrop}
         onDragOver={onDragOver}
-        className="flex-grow flex flex-col items-center justify-center bg-muted/30 rounded-b-lg p-6 min-h-96 border-2 border-dashed border-transparent"
+        onDragLeave={onDragLeave}
+        className="flex-grow flex flex-col items-center justify-center bg-muted/30 rounded-b-lg p-6 min-h-96 border-2 border-dashed border-transparent transition-colors"
       >
         {operations.length === 0 ? (
             <div className="text-center text-muted-foreground">
                 <LayoutGrid className="h-12 w-12 mx-auto mb-2" />
                 <p className="font-semibold">Drag & Drop Area</p>
-                <p className="text-sm">Drop columns here to build your pipeline.</p>
+                <p className="text-sm">Drop columns or elements here to build your pipeline.</p>
             </div>
         ) : (
             <div className="w-full flex items-center justify-center space-x-2 md:space-x-4 overflow-x-auto pb-4">
@@ -92,7 +100,37 @@ const ColumnsPanel = () => {
     );
 };
 
-const ActionsPanel = () => {
+const ElementsPanel = ({ operations }: { operations: typeof availableOperations }) => {
+    const handleDragStart = (e: React.DragEvent<HTMLDivElement>, operationName: string) => {
+        const data = JSON.stringify({ type: 'element', name: operationName });
+        e.dataTransfer.setData("application/json", data);
+    }
+
+    return (
+        <div className="p-4 space-y-4 h-full flex flex-col">
+            <h3 className="font-semibold text-foreground/90 text-lg">Elements</h3>
+            <p className="text-sm text-muted-foreground">Drag elements to the pipeline.</p>
+            <div className="flex-grow space-y-2 rounded-md border p-4 overflow-y-auto">
+                {operations.map(op => (
+                     <div 
+                        key={op.name} 
+                        draggable="true"
+                        onDragStart={(e) => handleDragStart(e, op.name)}
+                        className="flex items-center space-x-3 p-3 rounded-md bg-secondary hover:bg-secondary/80 cursor-grab active:cursor-grabbing"
+                     >
+                        <op.icon className={`h-6 w-6 shrink-0 ${op.color.replace('bg-', 'text-')}`} />
+                        <div>
+                            <p className="text-sm font-semibold text-secondary-foreground">{op.name}</p>
+                            <p className="text-xs text-muted-foreground">{op.description}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const ExportPanel = () => {
     return (
         <div className="p-4 space-y-4">
             <h3 className="font-semibold text-foreground/90 text-lg">Export</h3>
@@ -127,7 +165,8 @@ const WorkspaceSidebar = () => {
 
     const tools = [
         { id: 'columns', label: 'Columns', icon: ListChecks, panel: <ColumnsPanel /> },
-        { id: 'actions', label: 'Export', icon: FileSpreadsheet, panel: <ActionsPanel /> },
+        { id: 'elements', label: 'Elements', icon: Puzzle, panel: <ElementsPanel operations={availableOperations} /> },
+        { id: 'export', label: 'Export', icon: FileSpreadsheet, panel: <ExportPanel /> },
         { id: 'ai', label: 'AI Chat', icon: Bot, panel: <AiPanel /> }
     ];
 
@@ -192,6 +231,17 @@ export function Workspace() {
                         color: "bg-blue-100 text-blue-800",
                     };
                     setPipelineOperations(prev => [...prev, newOperation]);
+                } else if (data.type === 'element') {
+                    const operationDetails = availableOperations.find(op => op.name === data.name);
+                    if (operationDetails) {
+                        const newOperation: PipelineOperation = {
+                            id: Date.now(),
+                            name: operationDetails.name,
+                            icon: operationDetails.icon,
+                            color: operationDetails.color,
+                        };
+                        setPipelineOperations(prev => [...prev, newOperation]);
+                    }
                 }
             } catch (error) {
                 console.error("Failed to parse dropped data:", error);
@@ -209,6 +259,7 @@ export function Workspace() {
                 operations={pipelineOperations} 
                 onDrop={handleDrop} 
                 onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
             />
         </div>
     </div>
