@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Database, Filter, LayoutGrid, Merge, GitCommitHorizontal, FileSpreadsheet, Bot, ListChecks, Puzzle } from "lucide-react";
+import { Database, Filter, LayoutGrid, Merge, GitCommitHorizontal, FileSpreadsheet, Bot, ListChecks, Puzzle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,7 +23,13 @@ const availableOperations = [
   { name: 'AI Clean', icon: Bot, color: "bg-indigo-100 text-indigo-800", description: "Clean and format data with AI." },
 ];
 
-const PipelineVisual = ({ operations, onDrop, onDragOver, onDragLeave }: { operations: PipelineOperation[], onDrop: (e: React.DragEvent<HTMLDivElement>) => void, onDragOver: (e: React.DragEvent<HTMLDivElement>) => void, onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void }) => {
+const PipelineVisual = ({ operations, onDrop, onDragOver, onDragLeave, onRemoveOperation }: { 
+    operations: PipelineOperation[], 
+    onDrop: (e: React.DragEvent<HTMLDivElement>) => void, 
+    onDragOver: (e: React.DragEvent<HTMLDivElement>) => void, 
+    onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void,
+    onRemoveOperation: (id: number) => void
+}) => {
   return (
     <Card className="h-full flex flex-col transition-all duration-300 hover:shadow-lg">
       <CardHeader>
@@ -49,11 +55,19 @@ const PipelineVisual = ({ operations, onDrop, onDragOver, onDragLeave }: { opera
             <div className="w-full flex items-center justify-center space-x-2 md:space-x-4 overflow-x-auto pb-4">
             {operations.map((op, index) => (
                 <React.Fragment key={op.id}>
-                <div className="flex flex-col items-center space-y-2 flex-shrink-0">
+                <div className="relative group flex flex-col items-center space-y-2 flex-shrink-0">
                     <div className={`flex items-center justify-center h-20 w-20 rounded-lg border-2 border-dashed shadow-sm ${op.color.replace('bg-', 'border-')}`}>
-                    <op.icon className={`h-8 w-8 ${op.color.replace('bg-', 'text-')}`} />
+                        <op.icon className={`h-8 w-8 ${op.color.replace('bg-', 'text-')}`} />
                     </div>
                     <Badge variant="secondary" className="font-semibold">{op.name}</Badge>
+                    <Button
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => onRemoveOperation(op.id)}
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    >
+                        <X className="h-4 w-4"/>
+                    </Button>
                 </div>
                 {index < operations.length - 1 && (
                     <GitCommitHorizontal className="h-8 w-8 text-muted-foreground hidden md:block flex-shrink-0" />
@@ -248,6 +262,10 @@ export function Workspace() {
             }
         }
     };
+    
+    const handleRemoveOperation = (id: number) => {
+        setPipelineOperations(prev => prev.filter(op => op.id !== id));
+    };
 
   return (
     <div className="grid h-full grid-cols-1 gap-6 lg:grid-cols-10">
@@ -260,6 +278,7 @@ export function Workspace() {
                 onDrop={handleDrop} 
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
+                onRemoveOperation={handleRemoveOperation}
             />
         </div>
     </div>
